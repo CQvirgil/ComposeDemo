@@ -23,12 +23,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -39,6 +48,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +57,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -58,6 +70,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TriStateCheckbox
@@ -83,6 +96,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.virgil.composedemo.ui.theme.ComposeDemoTheme
+import com.virgil.composedemo.weigth.LinearDeterMinateIndicator
+import com.virgil.composedemo.weigth.MinimalDropdownMenu
+import com.virgil.composedemo.weigth.ProgressDemo
+import com.virgil.composedemo.weigth.PullToRefreshCustomStyleSample
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -93,18 +110,32 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val scope = rememberCoroutineScope()
+            var snackbarHostState = remember { SnackbarHostState() }
             ComposeDemoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Scaffold(modifier = Modifier.fillMaxSize(),
+                    floatingActionButton = {
+                        ExtendedFloatingActionButton(
+                            text = { Text("Show Snackbar") },
+                            icon = { Icon(Icons.Filled.Add, contentDescription = "") },
+                            onClick = {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Snackbar")
+                                }
+                            }
+                        )
+                    },
+                    snackbarHost = { SnackbarHostState() }) { innerPadding ->
+//                    Greeting(
+//                        name = "Android",
+//                        modifier = Modifier.padding(innerPadding)
+//                    )
                 }
             }
         }
     }
 }
-val demoList = listOf("Button", "卡片", "复选框", "条状标签", "固定的日期选择器")
+val demoList = listOf("Button", "卡片", "复选框", "条状标签", "固定的日期选择器", "进度条指示器", "下拉刷新", "快捷信息栏")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,6 +145,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
     var showContent by remember { mutableStateOf(demoList.get(0)) }
+    var expanded by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -147,7 +179,45 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                 )
             },
             topBar = {
-                CenterAlignedTopAppBar(title = { Text(showContent) }, navigationIcon = {
+                CenterAlignedTopAppBar(title = { Text(showContent) },
+                    actions = { IconButton(onClick = {//顶部右侧菜单按钮
+                        expanded = !expanded
+                    }){
+                        Icon(Icons.Default.MoreVert, "")
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = {expanded = false}
+                        ){
+                            DropdownMenuItem(
+                                text = { Text("Profile") },
+                                leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null) },
+                                onClick = {}
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Setting") },
+                                leadingIcon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
+                                onClick = {}
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(text = { Text("Send Feedback") },
+                                leadingIcon = { Icon(Icons.Outlined.Send, contentDescription = null) },
+                                trailingIcon = { Icon(Icons.Outlined.Favorite, contentDescription = null) },
+                                onClick = {}
+                            )
+                            HorizontalDivider()
+
+                            DropdownMenuItem(text = { Text("About") },
+                                leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+                                onClick = {}
+                            )
+
+                            DropdownMenuItem(text = { Text("Help") },
+                                leadingIcon = { Icon(Icons.AutoMirrored.Outlined.ExitToApp, contentDescription = null) },
+                                onClick = {}
+                            )
+                        }
+                    } },
+                    navigationIcon = {
                     IconButton(onClick = {
                         scope.launch {
                             drawerState.apply {
@@ -175,6 +245,11 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                 FilterChipDemo(contentPadding)
             } else if (showContent == demoList[4]){
                 DataPickerDocked(contentPadding)
+            } else if (showContent == demoList[5]){
+                ProgressDemo(contentPadding)
+            } else if (showContent == demoList[6]){
+                PullToRefreshCustomStyleSample(contentPadding)
+
             } else {
                 Text("Screen Content", modifier = Modifier.padding(contentPadding))
             }
